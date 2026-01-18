@@ -1,0 +1,405 @@
+setwd('./result')
+library(meta)
+library(tidyverse)
+library(metafor)
+library(grid)
+library(dmetar)
+knitr::opts_chunk$set(fig.width = 7.486)
+
+
+
+# ******************** STEP 1: Pool odds ratios and visualized by forest plots ********************
+
+#'--------
+#' C677T |
+#'--------
+
+#CT VS CC-------------------------------------------------------------
+df_ct<- read.csv('C677T_CTvsCC_R.csv')
+df_ct['n.e']<- df_ct$tpos..case_CT.+df_ct$tneg..control_CT.
+df_ct['n.c']<- df_ct$cneg..control_CC.+df_ct$cpos..case_CC.
+df_ct$Label<- paste(df_ct$Author, df_ct$Year.of.publication)
+
+m.bin<- metabin(event.e = tpos..case_CT., n.e = n.e, event.c = cpos..case_CC., n.c = n.c, studlab = Label, data = df_ct, sm='OR', fixed=FALSE, random = TRUE, method.tau = 'REML', hakn = TRUE)
+summary(m.bin)
+#m.bin.bias<- metabias(m.bin, method.bias = "Egger")
+#m.bin.bias
+regtest(m.bin, model="rma")
+
+#inspect default plot settings 
+defaults <- forest(m.bin)
+defaults 
+
+pdf(file = 'S2A.pdf', width = 7.48, pointsize = 10)
+
+forest(m.bin, sortvar = TE, prediction = TRUE, plotwidth=unit(40, "mm"),
+       print.I2=TRUE , print.tau2 = TRUE , print.pval.Q=TRUE, cex=0.2, #print.Q = TRUE,
+       digits = 2, digits.I2=2, digits.pval.Q=2, 
+       colgap = unit(0.2, "mm"), colgap.left = unit(0.2, "mm"), colgap.right = unit(0.2, "mm"), colgap.studlab = unit(0.2, "mm"), 
+       colgap.forest = unit(0.02, "mm"), colgap.forest.left = unit(0.02, "mm"), colgap.forest.right= unit(0.02, "mm"), 
+       leftlabs = c('Author (year)', 'Case', 'Total', 'Control', 'Total'), 
+       comb.fixed=FALSE, comb.random=TRUE, 
+       label.e = 'C/T', label.c = 'C/C', 
+       main= "", xlab = 'Risk Ratio (log scale)', cex.axis=0.2, cex.main =0.2, cex.sub =0.2)
+
+dev.off()
+
+#TT VS CC-------------------------------------------------------------
+df_tt<- read.csv('C677T_TTvsCC_R.csv')
+df_tt['n.e']<- df_tt$tpos..case_TT.+df_tt$tneg..control_TT.
+df_tt['n.c']<- df_tt$cneg..control_CC.+df_tt$cpos..case_CC.
+df_tt$Label<- paste(df_tt$Author, df_tt$Year.of.publication)
+
+
+m.bin_tt<- metabin(event.e = tpos..case_TT., n.e = n.e, event.c = cpos..case_CC., n.c = n.c, studlab = Label, data = df_tt, sm='OR', fixed=FALSE, random = TRUE, method.tau = 'REML', hakn = TRUE)
+summary(m.bin_tt)
+m.bin.bias<- metabias(m.bin_tt, method.bias = "Egger")
+m.bin.bias
+
+pdf(file = 'Fig2A.pdf', width = 7.48, pointsize = 10)
+
+forest(m.bin_tt, sortvar = TE, prediction = TRUE, plotwidth=unit(30, "mm"),
+       print.I2 = TRUE, print.tau2 = TRUE, print.pval.Q = TRUE, cex=0.2, #print.Q = TRUE,
+       digits = 2, digits.I2=2, digits.pval.Q=2, 
+       colgap = unit(0.2, "mm"), colgap.left = unit(0.2, "mm"), colgap.right = unit(0.2, "mm"), colgap.studlab = unit(0.2, "mm"), 
+       colgap.forest = unit(0.02, "mm"), colgap.forest.left = unit(0.02, "mm"), colgap.forest.right= unit(0.02, "mm"), 
+       leftlabs = c('Author (year)', 'Case', 'Total', 'Control', 'Total'), 
+       comb.fixed=FALSE, comb.random=TRUE, 
+       label.e = 'T/T', label.c = 'C/C', #, xlab = 'Association between MTFHR C677T and ASD susceptiblity', ff.xlab = 'bold', fs.xlab = 13
+       main= "", xlab = 'Risk Ratio (log scale)', cex.axis=0.2, cex.main =0.2, cex.sub =0.2)
+
+dev.off()
+
+
+#CT+TT VS CC-------------------------------------------------------------
+df_ct_tt<- read.csv('C677T_CT+TTvsCC_R.csv')
+df_ct_tt['n.e']<- df_ct_tt$tpos..case_TT.+df_ct_tt$tneg..control_TT.+df_ct$tpos..case_CT.+df_ct$tneg..control_CT.
+df_ct_tt['n.c']<- df_ct_tt$cneg..control_CC.+df_ct_tt$cpos..case_CC.
+df_ct_tt['tpos..case_ct_tt']<- df_ct_tt$tpos..case_TT.+df_ct_tt$tpos..case_CT.
+
+
+m.bin_ct_tt<- metabin(event.e = tpos..case_ct_tt, n.e = n.e, event.c = cpos..case_CC., n.c = n.c, studlab = Label, data = df_ct_tt, sm='OR', fixed=FALSE, random = TRUE, method.tau = 'REML', hakn = TRUE)
+summary(m.bin_ct_tt)
+metabias(m.bin_ct_tt, method.bias = "Egger")
+
+
+pdf(file = 'S2B.pdf', width = 7.48, pointsize = 10)
+
+
+forest(m.bin_ct_tt, sortvar = TE, prediction = TRUE, plotwidth=unit(30, "mm"),
+       print.I2 = TRUE, print.tau2 = TRUE, print.pval.Q = TRUE, cex=0.2, #print.Q = TRUE,
+       digits = 2, digits.I2=2, digits.pval.Q=2, 
+       colgap = unit(0.2, "mm"), colgap.left = unit(0.2, "mm"), colgap.right = unit(0.2, "mm"), colgap.studlab = unit(0.2, "mm"), 
+       colgap.forest = unit(0.02, "mm"), colgap.forest.left = unit(0.02, "mm"), colgap.forest.right= unit(0.02, "mm"), 
+       leftlabs = c('Author (year)', 'Case', 'Total', 'Control', 'Total'), 
+       comb.fixed=FALSE, comb.random=TRUE, 
+       label.e = 'C/T or T/T', label.c = 'C/C', #, xlab = 'Association between MTFHR C677T and ASD susceptiblity', ff.xlab = 'bold', fs.xlab = 13
+       main= "", xlab = 'Risk Ratio (log scale)', cex.axis=0.2, cex.main =0.2, cex.sub =0.2)
+
+dev.off()
+
+#TT VS CT+CC-------------------------------------------------------------
+df_tt_ct.cc<- read.csv('C677T_TTvsCT+CC_R.csv')
+df_tt_ct.cc['n.e']<- df_tt_ct.cc$tpos..case_TT.+df_tt_ct.cc$tneg..control_TT.
+df_tt_ct.cc['n.c']<- 
+  df_tt_ct.cc$cpos..case_CT.+
+  df_tt_ct.cc$cneg..control_CT.+
+  df_tt_ct.cc$cneg..control_CC.+
+  df_tt_ct.cc$cpos..case_CC.
+df_tt_ct.cc['cpos..case_ct_cc']<- df_tt_ct.cc$cpos..case_CT.+df_tt_ct.cc$cpos..case_CC.
+
+
+m.bin_tt_ct.cc<- metabin(event.e = tpos..case_TT., #ASD cases in TT group
+                         n.e = n.e, #total TT 
+                         event.c = cpos..case_ct_cc, #ASD cases in CT+CC
+                         n.c = n.c, # total CT+CC
+                         studlab = Label, data = df_tt_ct.cc, sm='OR', 
+                         fixed=FALSE, random = TRUE, method.tau = 'REML', hakn = TRUE)
+summary(m.bin_tt_ct.cc)
+
+pdf(file = 'Fig2B.pdf', width = 7.48, pointsize = 10)
+
+
+forest(m.bin_tt_ct.cc, sortvar = TE, prediction = TRUE, plotwidth=unit(30, "mm"),
+       print.I2 = TRUE, print.tau2 = TRUE, print.pval.Q = TRUE, cex=0.2, #print.Q = TRUE,
+       digits = 2, digits.I2=2, digits.pval.Q=2, 
+       colgap = unit(0.2, "mm"), colgap.left = unit(0.2, "mm"), colgap.right = unit(0.2, "mm"), colgap.studlab = unit(0.2, "mm"), 
+       colgap.forest = unit(0.02, "mm"), colgap.forest.left = unit(0.02, "mm"), colgap.forest.right= unit(0.02, "mm"), 
+       leftlabs = c('Author (year)', 'Case', 'Total', 'Control', 'Total'), 
+       comb.fixed=FALSE, comb.random=TRUE, 
+       label.e = 'T/T', label.c = 'C/T or C/C', #, xlab = 'Association between MTFHR C677T and ASD susceptiblity', ff.xlab = 'bold', fs.xlab = 13
+       main= "", xlab = 'Risk Ratio (log scale)', cex.axis=0.2, cex.main =0.2, cex.sub =0.2)
+
+dev.off()
+
+
+
+#'--------
+#' A1298C |
+#'--------
+
+#AC VS AA-------------------------------------------------------------
+df_ac_aa<- read.csv('ACvsAA.csv')
+df_ac_aa['n.e']<- df_ac_aa$tpos..case_AC.+df_ac_aa$tneg..control_AC.
+df_ac_aa['n.c']<- df_ac_aa$cneg..control_AA.+df_ac_aa$cpos..case_AA.
+df_ac_aa$author_year<- paste(df_ac_aa$Author, df_ac_aa$Year.of.publication, sep = ' ')
+
+m.bin_ac_aa<- metabin(event.e = tpos..case_AC., n.e = n.e, event.c = cpos..case_AA., n.c = n.c, studlab = Label, data = df_ac_aa, sm='OR', fixed=FALSE, random = TRUE, method.tau = 'REML', hakn = TRUE)
+summary(m.bin_ac_aa)
+
+pdf(file = 'S3A.pdf', width = 7.48, pointsize = 10)
+
+forest(m.bin_ac_aa, sortvar = TE, prediction = TRUE, plotwidth=unit(40, "mm"),
+       print.I2 = TRUE, print.tau2 = TRUE, print.pval.Q = TRUE, cex=0.2, #print.Q = TRUE,
+       digits = 2, digits.I2=2, digits.pval.Q=2, 
+       colgap = unit(0.2, "mm"), colgap.left = unit(0.2, "mm"), colgap.right = unit(0.2, "mm"), colgap.studlab = unit(0.2, "mm"), 
+       colgap.forest = unit(0.02, "mm"), colgap.forest.left = unit(0.02, "mm"), colgap.forest.right= unit(0.02, "mm"), 
+       leftlabs = c('Author (year)', 'Case', 'Total', 'Control', 'Total'), 
+       comb.fixed=FALSE, comb.random=TRUE, 
+       label.e = 'A/C', label.c = 'A/A', #, xlab = 'Association between MTFHR A1298C and ASD susceptiblity', ff.xlab = 'bold', fs.xlab = 13; removed: print.Q = TRUE,
+       main= "", xlab = 'Risk Ratio (log scale)', cex.axis=0.2, cex.main =0.2, cex.sub =0.2)
+
+dev.off()
+
+#CC vs AA-------------------------------------------------------------
+df_cc_aa<- read.csv('CCvsAA.csv')
+df_cc_aa['n.e']<- df_cc_aa$tpos..case_CC.+df_cc_aa$tneg..control_CC.
+df_cc_aa['n.c']<- df_cc_aa$cneg..control_AA.+df_cc_aa$cpos..case_AA.
+df_cc_aa$author_year<- paste(df_cc_aa$Author, df_cc_aa$Year.of.publication, sep = ' ')
+
+m.bin_cc_aa<- metabin(event.e = tpos..case_CC., n.e = n.e, event.c = cpos..case_AA., n.c = n.c, studlab = Label, data = df_cc_aa, sm='OR', fixed=FALSE, random = TRUE, method.tau = 'REML', hakn = TRUE)
+#summary(m.bin_cc_aa)
+metabias(m.bin_cc_aa, method.bias = "Egger")
+
+pdf(file = 'Fig3A.pdf', width = 7.48, pointsize = 10)
+
+forest(m.bin_cc_aa, sortvar = TE, prediction = TRUE, plotwidth=unit(40, "mm"),
+       print.I2 = TRUE, print.tau2 = TRUE, print.pval.Q = TRUE, cex=0.2, #print.Q = TRUE,
+       digits = 2, digits.I2=2, digits.pval.Q=2, 
+       colgap = unit(0.2, "mm"), colgap.left = unit(0.2, "mm"), colgap.right = unit(0.2, "mm"), colgap.studlab = unit(0.2, "mm"), 
+       colgap.forest = unit(0.02, "mm"), colgap.forest.left = unit(0.02, "mm"), colgap.forest.right= unit(0.02, "mm"), 
+       leftlabs = c('Author (year)', 'Case', 'Total', 'Control', 'Total'),
+       comb.fixed=FALSE, comb.random=TRUE, 
+       label.e = 'C/C', label.c = 'A/A', #, xlab = 'Association between MTFHR A1298C and ASD susceptiblity', ff.xlab = 'bold', fs.xlab = 13; removed: print.Q = TRUE,
+       main= "", xlab = 'Risk Ratio (log scale)', cex.axis=0.2, cex.main =0.2, cex.sub =0.2)
+
+dev.off()
+
+#AC+CC vs AA-------------------------------------------------------------
+df_ac_cc_aa<- read.csv('AC+CCvsAA.csv')
+df_ac_cc_aa['n.c']<- df_ac_cc_aa$cneg..control_AA.+df_ac_cc_aa$cpos..case_AA.
+df_ac_cc_aa['n.e']<- df_ac_cc_aa$tpos..case_AC.CC+df_ac_cc_aa$tneg..control_AC.CC
+df_ac_cc_aa$author_year<- paste(df_ac_cc_aa$Author, df_ac_cc_aa$Year.of.publication, sep = ' ')
+
+
+m.bin_ac_cc_aa<- metabin(event.e = tpos..case_AC.CC., n.e = n.e, event.c = cpos..case_AA., n.c = n.c, studlab = Label, data = df_ac_cc_aa, sm='OR', fixed=FALSE, random = TRUE, method.tau = 'REML', hakn = TRUE)
+summary(m.bin_ac_cc_aa)
+
+pdf(file = 'S3B.pdf', width = 7.48, pointsize = 10)
+
+forest(m.bin_ac_cc_aa, sortvar = TE, prediction = TRUE, plotwidth=unit(40, "mm"),
+       print.I2 = TRUE, print.tau2 = TRUE, print.pval.Q = TRUE, cex=0.2, #print.Q = TRUE,
+       digits = 2, digits.I2=2, digits.pval.Q=2, 
+       colgap = unit(0.2, "mm"), colgap.left = unit(0.2, "mm"), colgap.right = unit(0.2, "mm"), colgap.studlab = unit(0.2, "mm"), 
+       colgap.forest = unit(0.02, "mm"), colgap.forest.left = unit(0.02, "mm"), colgap.forest.right= unit(0.02, "mm"), 
+       leftlabs = c('Author (year)', 'Case', 'Total', 'Control', 'Total'),
+       comb.fixed=FALSE, comb.random=TRUE, 
+       label.e = 'A/C or CC', label.c = 'A/A', #, xlab = 'Association between MTFHR A1298C and ASD susceptiblity', ff.xlab = 'bold', fs.xlab = 13; removed: print.Q = TRUE,
+       main= "", xlab = 'Risk Ratio (log scale)', cex.axis=0.2, cex.main =0.2, cex.sub =0.2)
+
+dev.off()
+
+#CC VS AC+AA-------------------------------------------------------------
+df_cc_ac_aa<- read.csv('CCvsAC+AA.csv')
+df_cc_ac_aa['n.c']<- 
+  df_cc_ac_aa$cneg..control_AA.+
+  df_cc_ac_aa$cpos..case_AA.+
+  df_cc_ac_aa$cpos..case_AC.+
+  df_cc_ac_aa$cneg..control_AA.
+df_cc_ac_aa['n.e']<- df_cc_ac_aa$tpos..case_CC.+df_cc_ac_aa$tneg..control_CC.
+df_cc_ac_aa['cpos..case_ac_aa']<- df_cc_ac_aa$cpos..case_AC.+df_cc_ac_aa$cpos..case_AA.
+
+m.bin_cc_ac_aa<- metabin(event.e = tpos..case_CC., #ASD in CC group
+                         n.e = n.e, #total CC
+                         event.c = cpos..case_ac_aa,  #ASD in AC+AA
+                         n.c = n.c, # total AC+AA
+                         studlab = Label, 
+                         data = df_cc_ac_aa, 
+                         sm='OR', 
+                         fixed=FALSE, random = TRUE, method.tau = 'REML', hakn = TRUE)
+summary(m.bin_cc_ac_aa)
+metabias(m.bin_cc_ac_aa, method.bias = "Egger")
+trimfill(m.bin_cc_ac_aa)
+
+
+pdf(file = 'Fig3B.pdf', width = 7.48, pointsize = 10)
+
+forest(m.bin_cc_ac_aa, sortvar = TE, prediction = TRUE, plotwidth=unit(40, "mm"),
+       print.I2 = TRUE, print.tau2 = TRUE, print.pval.Q = TRUE, cex=0.2, #print.Q = TRUE,
+       digits = 2, digits.I2=2, digits.pval.Q=2, 
+       colgap = unit(0.2, "mm"), colgap.left = unit(0.2, "mm"), colgap.right = unit(0.2, "mm"), colgap.studlab = unit(0.2, "mm"), 
+       colgap.forest = unit(0.02, "mm"), colgap.forest.left = unit(0.02, "mm"), colgap.forest.right= unit(0.02, "mm"), 
+       leftlabs = c('Author (year)', 'Case', 'Total', 'Control', 'Total'),
+       comb.fixed=FALSE, comb.random=TRUE, 
+       label.e = 'CC', label.c = 'A/C or A/A', #, xlab = 'Association between MTFHR A1298C and ASD susceptiblity', ff.xlab = 'bold', fs.xlab = 13; removed: print.Q = TRUE,
+       main= "", xlab = 'Risk Ratio (log scale)', cex.axis=0.2, cex.main =0.2, cex.sub =0.2)
+
+dev.off()
+
+
+
+
+
+
+
+
+
+
+# ********************** STEP 2: Meta regression ********************
+
+library(meta)
+
+#'--------
+#' C677T |
+#'--------
+continent<- c('Europe','Europe','Europe','Africa','Europe','Africa','Africa','Asia','Europe','Asia','Asia','Asia','Asia','Africa','Europe','Europe','Asia','Asia','Asia','Asia','Asia','Asia','Asia')
+
+m.bin_ct.reg<- metareg(m.bin, ~continent)
+m.bin_ct.reg
+m.bin_tt.reg<- metareg(m.bin_tt, ~continent)
+m.bin_tt.reg
+m.bin_ct_tt.reg<- metareg(m.bin_ct_tt, ~continent)
+m.bin_ct_tt.reg
+m.bin_tt_ct.cc.reg<- metareg(m.bin_tt_ct.cc, ~continent)
+m.bin_tt_ct.cc.reg
+
+#'--------
+#' A1298C |
+#'--------
+
+continent<- c('Africa','Europe','Africa','Asia','Asia','Asia','Asia','Asia','Europe','Europe')
+
+m.bin_ac_aa.reg<- metareg(m.bin_ac_aa, ~continent)
+m.bin_ac_aa.reg
+m.bin_cc_aa.reg<- metareg(m.bin_cc_aa, ~continent)
+m.bin_cc_aa.reg
+m.bin_ac_cc_aa.reg<- metareg(m.bin_ac_cc_aa, ~continent)
+m.bin_ac_cc_aa.reg
+m.bin_cc_ac_aa.reg<- metareg(m.bin_cc_ac_aa, ~continent)
+m.bin_cc_ac_aa.reg
+
+
+
+
+
+
+
+
+
+
+
+# ******************** STEP 3: Publication bias by funnel plot ******************
+
+library(meta)
+
+#'--------
+#' C677T |
+#'--------
+
+
+#Fig4 A TTvsCC
+col.contour = c("gray75", "gray85", "gray95")
+
+pdf('Fig4A.pdf',width = 7.48)
+meta::funnel(m.bin_tt,  # change this m.bin to m.bin_tt, m.bin_ct_tt,... to draw each pic
+             contour = c(0.9, 0.95, 0.99),
+             col.contour = col.contour)
+legend(x = 15, y = 0.01, #try and adjust legend's position
+       legend = c("p < 0.1", "p < 0.05", "p < 0.01"),
+       fill = col.contour)
+graphics.off()
+
+
+#Fig4 B TTvsCT+CC
+col.contour = c("gray75", "gray85", "gray95")
+
+pdf('Fig4B.pdf',width = 7.48)
+meta::funnel(m.bin_tt_ct.cc,  # change this m.bin to m.bin_tt, m.bin_ct_tt,... to draw each pic
+             contour = c(0.9, 0.95, 0.99),
+             col.contour = col.contour)
+legend(x = 10, y = 0.01, #try and adjust legend's position
+       legend = c("p < 0.1", "p < 0.05", "p < 0.01"),
+       fill = col.contour)
+graphics.off()
+
+
+#S4A CTvsCC
+col.contour = c("gray75", "gray85", "gray95")
+
+pdf('S4A.pdf',width = 7.48)
+meta::funnel(m.bin,  # change this m.bin to m.bin_tt, m.bin_ct_tt,... to draw each pic
+             contour = c(0.9, 0.95, 0.99),
+             col.contour = col.contour)
+legend(x = 5, y = 0.01, #try and adjust legend's position
+       legend = c("p < 0.1", "p < 0.05", "p < 0.01"),
+       fill = col.contour)
+graphics.off()
+
+
+
+#S4B CT+TTvsCC
+col.contour = c("gray75", "gray85", "gray95")
+pdf('S4B.pdf',width = 7.48)
+meta::funnel(m.bin_ct_tt,  # change this m.bin to m.bin_tt, m.bin_ct_tt,... to draw each pic
+             contour = c(0.9, 0.95, 0.99),
+             col.contour = col.contour)
+legend(x = 5.5, y = 0.01, #try and adjust legend's position
+       legend = c("p < 0.1", "p < 0.05", "p < 0.01"),
+       fill = col.contour)
+graphics.off()
+
+
+#'--------
+#' A1298C |
+#'--------
+
+#Fig5 A CC vs. AA
+col.contour = c("gray75", "gray85", "gray95")
+pdf('Fig5A.pdf',width = 7.48)
+meta::funnel(m.bin_cc_aa,  # change this m.bin to m.bin_tt, m.bin_ct_tt,... to draw each pic
+             contour = c(0.9, 0.95, 0.99),
+             col.contour = col.contour)
+legend(x = 18, y = 0.01, #try and adjust legend's position
+       legend = c("p < 0.1", "p < 0.05", "p < 0.01"),
+       fill = col.contour)
+graphics.off()
+
+#Fig 5 B CC vs. AC+AA
+pdf('Fig5B.pdf',width = 7.48)
+meta::funnel(m.bin_cc_ac_aa,  # change this m.bin to m.bin_tt, m.bin_ct_tt,... to draw each pic
+             contour = c(0.9, 0.95, 0.99),
+             col.contour = col.contour)
+legend(x = 30, y = 0.01, #try and adjust legend's position
+       legend = c("p < 0.1", "p < 0.05", "p < 0.01"),
+       fill = col.contour)
+graphics.off()
+
+#S5A AC vs. AA
+pdf('S5A.pdf',width = 7.48)
+meta::funnel(m.bin_ac_aa,  # change this m.bin to m.bin_tt, m.bin_ct_tt,... to draw each pic
+             contour = c(0.9, 0.95, 0.99),
+             col.contour = col.contour)
+legend(x = 9, y = 0.01, #try and adjust legend's position
+       legend = c("p < 0.1", "p < 0.05", "p < 0.01"),
+       fill = col.contour)
+graphics.off()
+
+#S5B AC+CC vs. AA
+pdf('S5B.pdf',width = 7.48)
+meta::funnel(m.bin_ac_cc_aa,  # change this m.bin to m.bin_tt, m.bin_ct_tt,... to draw each pic
+             contour = c(0.9, 0.95, 0.99),
+             col.contour = col.contour)
+legend(x = 10, y = 0.01, #try and adjust legend's position
+       legend = c("p < 0.1", "p < 0.05", "p < 0.01"),
+       fill = col.contour)
+graphics.off()
