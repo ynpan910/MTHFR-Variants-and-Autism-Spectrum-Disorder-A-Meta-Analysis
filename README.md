@@ -1,4 +1,4 @@
-![alt text]([http://url/to/img.png](https://www.mdpi.com/2076-3425/16/1/93#))
+![Figure 1. Title or description](figure1.jpeg)
 
 
 This is the analysis codes for our paper: The Contribution of Ethnicity to the Association of MTHFR Variants C677T and A1298C with Autism Spectrum Disorder: A Meta-Analysis.
