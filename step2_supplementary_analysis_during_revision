@@ -1,0 +1,389 @@
+library(meta)
+library(tidyverse)
+library(metafor)
+library(grid)
+#library(dmetar)
+knitr::opts_chunk$set(fig.width = 7.486)
+
+
+
+
+# ******************** Analysis 1: sensitivity analyses for the two major models for C677T and A1298C ************
+
+#'--------
+#' C677T |
+#'--------
+
+
+#TT VS CC-------------------------------------------------------------
+df_tt<- read.csv('../C677T_TTvsCC_R.csv')
+df_tt['n.e']<- df_tt$tpos..case_TT.+df_tt$tneg..control_TT.
+df_tt['n.c']<- df_tt$cneg..control_CC.+df_tt$cpos..case_CC.
+df_tt$Label<- paste(df_tt$Author, df_tt$Year.of.publication)
+
+
+m.bin_tt<- metabin(event.e = tpos..case_TT., n.e = n.e, event.c = cpos..case_CC., n.c = n.c, studlab = Label, data = df_tt, sm='OR', fixed=FALSE, random = TRUE, method.tau = 'REML', hakn = TRUE)
+
+loo_tt <- metainf(m.bin_tt)
+
+pdf(file = 'revised_FigS2A.pdf', width = 9, pointsize = 10)
+forest(loo_tt)
+dev.off()
+
+
+
+#TT VS CT+CC-------------------------------------------------------------
+df_tt_ct.cc<- read.csv('../C677T_TTvsCT+CC_R.csv')
+df_tt_ct.cc['n.e']<- df_tt_ct.cc$tpos..case_TT.+df_tt_ct.cc$tneg..control_TT.
+df_tt_ct.cc['n.c']<- 
+  df_tt_ct.cc$cpos..case_CT.+
+  df_tt_ct.cc$cneg..control_CT.+
+  df_tt_ct.cc$cneg..control_CC.+
+  df_tt_ct.cc$cpos..case_CC.
+df_tt_ct.cc['cpos..case_ct_cc']<- df_tt_ct.cc$cpos..case_CT.+df_tt_ct.cc$cpos..case_CC.
+
+
+m.bin_tt_ct.cc<- metabin(event.e = tpos..case_TT., #ASD cases in TT group
+                         n.e = n.e, #total TT 
+                         event.c = cpos..case_ct_cc, #ASD cases in CT+CC
+                         n.c = n.c, # total CT+CC
+                         studlab = Label, data = df_tt_ct.cc, sm='OR', 
+                         fixed=FALSE, random = TRUE, method.tau = 'REML', hakn = TRUE)
+
+loo_tt_ct.cc <- metainf(m.bin_tt_ct.cc)
+
+pdf(file = 'revised_FigS2B.pdf', width = 9, pointsize = 10)
+forest(loo_tt_ct.cc)
+dev.off()
+
+
+
+
+#'--------
+#' A1298C |
+#'--------
+#CC vs AA-------------------------------------------------------------
+df_cc_aa<- read.csv('../CCvsAA.csv')
+df_cc_aa['n.e']<- df_cc_aa$tpos..case_CC.+df_cc_aa$tneg..control_CC.
+df_cc_aa['n.c']<- df_cc_aa$cneg..control_AA.+df_cc_aa$cpos..case_AA.
+df_cc_aa$author_year<- paste(df_cc_aa$Author, df_cc_aa$Year.of.publication, sep = ' ')
+
+m.bin_cc_aa<- metabin(event.e = tpos..case_CC., n.e = n.e, event.c = cpos..case_AA., n.c = n.c, studlab = Label, data = df_cc_aa, sm='OR', fixed=FALSE, random = TRUE, method.tau = 'REML', hakn = TRUE)
+
+loo_cc_aa <- metainf(m.bin_cc_aa)
+
+pdf(file = 'FigS4A.pdf', width = 9, pointsize = 10)
+forest(loo_cc_aa)
+dev.off()
+
+
+
+
+#CC VS AC+AA-------------------------------------------------------------
+df_cc_ac_aa<- read.csv('../CCvsAC+AA.csv')
+df_cc_ac_aa['n.c']<- 
+  df_cc_ac_aa$cneg..control_AA.+
+  df_cc_ac_aa$cpos..case_AA.+
+  df_cc_ac_aa$cpos..case_AC.+
+  df_cc_ac_aa$cneg..control_AA.
+df_cc_ac_aa['n.e']<- df_cc_ac_aa$tpos..case_CC.+df_cc_ac_aa$tneg..control_CC.
+df_cc_ac_aa['cpos..case_ac_aa']<- df_cc_ac_aa$cpos..case_AC.+df_cc_ac_aa$cpos..case_AA.
+
+m.bin_cc_ac_aa<- metabin(event.e = tpos..case_CC., #ASD in CC group
+                         n.e = n.e, #total CC
+                         event.c = cpos..case_ac_aa,  #ASD in AC+AA
+                         n.c = n.c, # total AC+AA
+                         studlab = Label, 
+                         data = df_cc_ac_aa, 
+                         sm='OR', 
+                         fixed=FALSE, random = TRUE, method.tau = 'REML', hakn = TRUE)
+
+loo_cc_ac_aa <- metainf(m.bin_cc_ac_aa)
+
+pdf(file = 'FigS4B.pdf', width = 9, pointsize = 10)
+forest(loo_cc_ac_aa)
+dev.off()
+
+
+
+# ****************************************** Analysis 2: Meta regression ****************************************** 
+library(meta)
+
+#'--------
+#' C677T |
+#'--------
+
+
+# -------------- step1: run the four models in each genetic association --------
+#' the other two are already run in the Analysis 1.
+
+
+#CT+TT VS CC-------------------------------------------------------------
+df_ct_tt<- read.csv('../C677T_CT+TTvsCC_R.csv')
+df_ct_tt['n.e']<- df_ct_tt$tpos..case_TT.+df_ct_tt$tneg..control_TT.+df_ct_tt$tpos..case_CT.+df_ct_tt$tneg..control_CT.
+df_ct_tt['n.c']<- df_ct_tt$cneg..control_CC.+df_ct_tt$cpos..case_CC.
+df_ct_tt['tpos..case_ct_tt']<- df_ct_tt$tpos..case_TT.+df_ct_tt$tpos..case_CT.
+m.bin_ct_tt<- metabin(event.e = tpos..case_ct_tt, n.e = n.e, event.c = cpos..case_CC., n.c = n.c, studlab = Label, data = df_ct_tt, sm='OR', fixed=FALSE, random = TRUE, method.tau = 'REML', hakn = TRUE)
+
+#CT VS CC-------------------------------------------------------------
+df_ct<- read.csv('../C677T_CTvsCC_R.csv')
+df_ct['n.e']<- df_ct$tpos..case_CT.+df_ct$tneg..control_CT.
+df_ct['n.c']<- df_ct$cneg..control_CC.+df_ct$cpos..case_CC.
+df_ct$Label<- paste(df_ct$Author, df_ct$Year.of.publication)
+m.bin<- metabin(event.e = tpos..case_CT., n.e = n.e, event.c = cpos..case_CC., n.c = n.c, studlab = Label, data = df_ct, sm='OR', fixed=FALSE, random = TRUE, method.tau = 'REML', hakn = TRUE)
+
+
+
+# -------------- step2: prepare covariations for regression --------------
+res<- read.csv('../table_for_meta_regression_CT.csv')
+continent<- res$Population.race
+dsm<- res$Diagnostic.tool
+year<- res$Year.of.publication
+quality<- res$Quality
+
+class(continent)
+class(dsm)
+class(year)
+class(quality)
+
+# -------------- step3: test what covariates to include in the regression model --------------
+covars <- c( "dsm", "year", "quality")
+
+base_models <- list(
+  "TT vs. CT+CC" = m.bin_tt_ct.cc,
+  "TT vs. CC"    = m.bin_tt,
+  "CT+TT vs. CC" = m.bin_ct_tt,
+  "CT vs. CC"    = m.bin
+)
+
+run_metareg <- function(model, extra_covars) {
+  all_covars <- c("continent", extra_covars)
+  fml <- as.formula(paste("~", paste(all_covars, collapse = " + ")))
+  reg <- metareg(model, fml)
+  data.frame(
+    covariates = paste(all_covars, collapse = " + "),
+    #n_covariates = length(all_covars),
+    R2 = if (!is.null(reg$R2)) reg$R2 else NA_real_
+    #tau2 = if (!is.null(reg$tau2)) reg$tau2 else NA_real_
+  )
+}
+
+
+R2_table <- do.call(
+  rbind,
+  lapply(names(base_models), function(model_name) {
+    
+    base_model <- base_models[[model_name]]
+    
+    # continent + 1
+    res_1 <- do.call(
+      rbind,
+      lapply(covars, function(x) run_metareg(base_model, x))
+    )
+    
+    # continent + 2
+    res_2 <- do.call(
+      rbind,
+      lapply(combn(covars, 2, simplify = FALSE),
+             function(x) run_metareg(base_model, x))
+    )
+    
+    # continent + 3
+    res_3 <- run_metareg(base_model, covars)
+    
+    res <- rbind(res_1, res_2, res_3)
+    
+    res$model <- model_name
+    res
+  })
+)
+
+R2_table <- R2_table[, c("model", "covariates", "R2")]
+R2_table <- R2_table[order(R2_table$model, -R2_table$R2), ]
+R2_table
+
+
+library(openxlsx)
+write.xlsx(R2_table, file = "STable4.xlsx", rowNames = FALSE)
+
+
+
+
+# -------------- step4: run regression! --------------
+#  "TT vs. CC" 
+m.bin_tt.reg<- metareg(m.bin_tt, ~continent+quality)
+m.bin_tt.reg
+
+
+#  "TT vs. CT+CC"
+m.bin_tt_ct.cc.reg<- metareg(m.bin_tt_ct.cc, ~continent+year)
+m.bin_tt_ct.cc.reg
+
+
+#  "CT vs. CC"
+m.bin_ct.reg<- metareg(m.bin, ~continent+year+dsm)
+m.bin_ct.reg
+
+
+#  "CT+TT vs. CC"
+m.bin_ct_tt.reg<- metareg(m.bin_ct_tt, ~continent+year+dsm)
+m.bin_ct_tt.reg
+
+
+
+#'--------
+#' A1298C |
+#'--------
+
+
+
+# -------------- step1: first run the four models in each genetic association --------
+
+
+#AC VS AA-------------------------------------------------------------
+df_ac_aa<- read.csv('../ACvsAA.csv')
+df_ac_aa['n.e']<- df_ac_aa$tpos..case_AC.+df_ac_aa$tneg..control_AC.
+df_ac_aa['n.c']<- df_ac_aa$cneg..control_AA.+df_ac_aa$cpos..case_AA.
+df_ac_aa$author_year<- paste(df_ac_aa$Author, df_ac_aa$Year.of.publication, sep = ' ')
+m.bin_ac_aa<- metabin(event.e = tpos..case_AC., n.e = n.e, event.c = cpos..case_AA., n.c = n.c, studlab = Label, data = df_ac_aa, sm='OR', fixed=FALSE, random = TRUE, method.tau = 'REML', hakn = TRUE)
+
+
+#CC vs AA-------------------------------------------------------------
+df_cc_aa<- read.csv('../CCvsAA.csv')
+df_cc_aa['n.e']<- df_cc_aa$tpos..case_CC.+df_cc_aa$tneg..control_CC.
+df_cc_aa['n.c']<- df_cc_aa$cneg..control_AA.+df_cc_aa$cpos..case_AA.
+df_cc_aa$author_year<- paste(df_cc_aa$Author, df_cc_aa$Year.of.publication, sep = ' ')
+m.bin_cc_aa<- metabin(event.e = tpos..case_CC., n.e = n.e, event.c = cpos..case_AA., n.c = n.c, studlab = Label, data = df_cc_aa, sm='OR', fixed=FALSE, random = TRUE, method.tau = 'REML', hakn = TRUE)
+
+
+#AC+CC vs AA-------------------------------------------------------------
+df_ac_cc_aa<- read.csv('../AC+CCvsAA.csv')
+df_ac_cc_aa['n.c']<- df_ac_cc_aa$cneg..control_AA.+df_ac_cc_aa$cpos..case_AA.
+df_ac_cc_aa['n.e']<- df_ac_cc_aa$tpos..case_AC.CC+df_ac_cc_aa$tneg..control_AC.CC
+df_ac_cc_aa$author_year<- paste(df_ac_cc_aa$Author, df_ac_cc_aa$Year.of.publication, sep = ' ')
+m.bin_ac_cc_aa<- metabin(event.e = tpos..case_AC.CC., n.e = n.e, event.c = cpos..case_AA., n.c = n.c, studlab = Label, data = df_ac_cc_aa, sm='OR', fixed=FALSE, random = TRUE, method.tau = 'REML', hakn = TRUE)
+
+
+#CC VS AC+AA-------------------------------------------------------------
+df_cc_ac_aa<- read.csv('../CCvsAC+AA.csv')
+df_cc_ac_aa['n.c']<- 
+  df_cc_ac_aa$cneg..control_AA.+
+  df_cc_ac_aa$cpos..case_AA.+
+  df_cc_ac_aa$cpos..case_AC.+
+  df_cc_ac_aa$cneg..control_AA.
+df_cc_ac_aa['n.e']<- df_cc_ac_aa$tpos..case_CC.+df_cc_ac_aa$tneg..control_CC.
+df_cc_ac_aa['cpos..case_ac_aa']<- df_cc_ac_aa$cpos..case_AC.+df_cc_ac_aa$cpos..case_AA.
+m.bin_cc_ac_aa<- metabin(event.e = tpos..case_CC., #ASD in CC group
+                         n.e = n.e, #total CC
+                         event.c = cpos..case_ac_aa,  #ASD in AC+AA
+                         n.c = n.c, # total AC+AA
+                         studlab = Label, 
+                         data = df_cc_ac_aa, 
+                         sm='OR', 
+                         fixed=FALSE, random = TRUE, method.tau = 'REML', hakn = TRUE)
+
+
+
+# -------------- step2: prepare covariations for regression --------------
+res<- read.csv('../table_for_meta_regression_AC.csv')
+continent<- res$Population.race
+dsm<- res$Diagnostic.tool
+year<- res$Year.of.publication
+quality<- res$Quality
+
+class(continent)
+class(dsm)
+class(year)
+class(quality)
+
+
+
+# -------------- step3: test what covariates to include in the regression model --------------
+covars <- c( "dsm", "year", "quality")
+
+base_models <- list(
+  "CC vs. AA"    = m.bin_cc_aa,
+  "CC vs. AC+AA" = m.bin_cc_ac_aa,
+  "AC vs. AA"    = m.bin_ac_aa,
+  "AC+CC vs. AA" = m.bin_ac_cc_aa
+)
+
+run_metareg_safe <- function(model, extra_covars, model_label) {
+  fml <- as.formula(
+    paste("~ continent +", paste(extra_covars, collapse = " + "))
+  )
+  
+  reg <- try(metareg(model, fml), silent = TRUE)
+  if (inherits(reg, "try-error")) {
+    data.frame(
+      genetic_model = model_label,
+      covariates = paste("continent +", paste(extra_covars, collapse = " + ")),
+      n_extra_covars = length(extra_covars),
+      R2 = NA_real_
+    )
+  } else {
+    data.frame(
+      genetic_model = model_label,
+      covariates = paste("continent +", paste(extra_covars, collapse = " + ")),
+      n_extra_covars = length(extra_covars),
+      R2 = reg$R2
+    )
+  }
+}
+
+
+R2_table <- do.call(
+  rbind,
+  lapply(names(base_models), function(model_name) {
+    
+    base_model <- base_models[[model_name]]
+    
+    # continent + 1
+    res_1 <- do.call(
+      rbind,
+      lapply(covars, function(x)
+        run_metareg_safe(base_model, x, model_name))
+    )
+    
+    # continent + 2
+    res_2 <- do.call(
+      rbind,
+      lapply(combn(covars, 2, simplify = FALSE), function(x)
+        run_metareg_safe(base_model, x, model_name))
+    )
+    
+    # continent + 3
+    res_3 <- run_metareg_safe(base_model, covars, model_name)
+    
+    rbind(res_1, res_2, res_3)
+  })
+)
+
+R2_table <- R2_table[order(R2_table$genetic_model, -R2_table$R2), ]
+R2_table
+
+library(openxlsx)
+write.xlsx(R2_table, file = "STable6.xlsx", rowNames = FALSE)
+
+
+# -------------- step4: run regression! --------------
+
+#  "CC vs. AA" 
+m.bin_cc_aa.reg<- metareg(m.bin_cc_aa, ~continent+dsm)
+m.bin_cc_aa.reg
+
+
+#  "CC vs. AC+AA"
+m.bin_cc_ac_aa.reg<- metareg(m.bin_cc_ac_aa, ~continent+dsm)
+m.bin_cc_ac_aa.reg
+
+
+#  "AC vs. AA"
+m.bin_ac_aa.reg<- metareg(m.bin_ac_aa, ~continent+year+quality)
+m.bin_ac_aa.reg
+
+
+#  "AC+CC vs. AA"
+m.bin_ac_cc_aa.reg<- metareg(m.bin_ac_cc_aa, ~continent+dsm)
+m.bin_ac_cc_aa.reg
+
