@@ -8,7 +8,7 @@ Our study looked at the association of two MTHFR variants C677T and A1298C and A
 
 This repo includes the following four major statistical analyses in the paper:
 1) We **pooled odds ratio** of ASD among MTHFR C677T or A1298C homozygous individuals compared to control cohorts using a random effect model. [step1_major_analysis](step1_major_analysis)
-2) **Univariate meta-regression** to identify race/ethnicity differences in the association of MTHFR C677T and A1298C with ASD. [step1_major_analysis](step1_major_analysis.R)
-3) **Multiple meta-regressions** to adjust for potential study-level covariates, including publication year, diagnostic tool (DSM-IV, DSM-V, or others), and study quality, assessed as the total Newcastle–Ottawa Scale Star score. [step2_supplementary_analysis_during_revision](step2_supplementary_analysis_during_revision.R)
-4) **Leave-one-out sensitivity analysis** to check robustness of the meta-analysis. [step2_supplementary_analysis_during_revision](step2_supplementary_analysis_during_revision.R)
+2) **Univariate meta-regression** to identify race/ethnicity differences in the association of MTHFR C677T and A1298C with ASD. [step1_major_analysis](step1_major_analysis)
+3) **Multiple meta-regressions** to adjust for potential study-level covariates, including publication year, diagnostic tool (DSM-IV, DSM-V, or others), and study quality, assessed as the total Newcastle–Ottawa Scale Star score. [step2_supplementary_analysis_during_revision](step2_supplementary_analysis_during_revision)
+4) **Leave-one-out sensitivity analysis** to check robustness of the meta-analysis. [step2_supplementary_analysis_during_revision](step2_supplementary_analysis_during_revision)
 
